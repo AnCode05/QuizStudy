@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tin Học Quiz · Ôn tập Tin học 10</title>
+<style>
+  :root{
+    --bg:#f2f5fb;
+    --card:#ffffff;
+    --text:#16203a;
+    --muted:#6b7794;
+    --border:#e3e8f2;
+    --opt-bg:#ffffff;
+    --primary:#5b8cff;
+    --primary-2:#7c4dff;
+    --ok:#16a34a;
+    --ok-bg:#e8f8ee;
+    --bad:#e5484d;
+    --bad-bg:#fdecec;
+    --hint:#b8860b;
+    --hint-bg:#fff8e1;
+    --shadow:0 10px 30px rgba(28,45,90,.08);
+    --shadow-sm:0 4px 14px rgba(28,45,90,.06);
+  }
+  [data-theme="dark"]{
+    --bg:#0e1320;
+    --card:#161c2c;
+    --text:#e8edf8;
+    --muted:#94a1bd;
+    --border:#26304a;
+    --opt-bg:#1b2334;
+    --primary:#6f9bff;
+    --primary-2:#a07cff;
+    --ok:#3ddc84;
+    --ok-bg:#12281c;
+    --bad:#ff6b6b;
+    --bad-bg:#2a1518;
+    --hint:#ffd166;
+    --hint-bg:#2a2415;
+    --shadow:0 10px 30px rgba(0,0,0,.45);
+    --shadow-sm:0 4px 14px rgba(0,0,0,.35);
+  }
+
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    padding:22px 16px 70px;
+    font-family:"Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    transition:background .3s ease,color .3s ease;
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";
+    position:fixed; inset:0; z-index:-1; pointer-events:none;
+    background:
+      radial-gradient(620px 420px at 8% -8%, rgba(91,140,255,.28), transparent 62%),
+      radial-gradient(620px 420px at 102% 2%, rgba(124,77,255,.22), transparent 62%);
+  }
+
+  .app{max-width:820px;margin:0 auto}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:16px;margin-bottom:18px;
+  }
+  .brand{display:flex;align-items:center;gap:13px}
+  .logo{width:48px;height:48px;flex:0 0 48px;filter:drop-shadow(0 6px 14px rgba(91,140,255,.35))}
+  .brand h1{
+    margin:0;font-size:1.18rem;letter-spacing:-.3px;font-weight:800;
+    background:linear-gradient(100deg,var(--primary),var(--primary-2));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .brand p{margin:2px 0 0;font-size:.78rem;color:var(--muted);font-weight:500}
+
+  .theme-btn{
+    width:46px;height:46px;border-radius:14px;border:1px solid var(--border);
+    background:var(--card);color:var(--text);cursor:pointer;
+    display:grid;place-items:center;box-shadow:var(--shadow-sm);
+    transition:transform .18s ease,border-color .18s ease,background .3s;
+  }
+  .theme-btn:hover{transform:translateY(-2px) rotate(-6deg);border-color:var(--primary)}
+  .theme-btn svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+  [data-theme="light"] .i-sun{display:none}
+  [data-theme="dark"]  .i-moon{display:none}
+
+  /* ---------- Stats ---------- */
+  .stats{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px;
+  }
+  .stat{
+    background:var(--card);border:1px solid var(--border);border-radius:16px;
+    padding:11px 14px;display:flex;align-items:center;gap:10px;
+    box-shadow:var(--shadow-sm);transition:background .3s,border-color .3s;
+  }
+  .stat .dot{width:9px;height:9px;border-radius:50%;flex:0 0 9px}
+  .stat.ok .dot{background:var(--ok);box-shadow:0 0 0 4px color-mix(in srgb,var(--ok) 18%,transparent)}
+  .stat.bad .dot{background:var(--bad);box-shadow:0 0 0 4px color-mix(in srgb,var(--bad) 18%,transparent)}
+  .stat.idx .dot{background:var(--primary);box-shadow:0 0 0 4px color-mix(in srgb,var(--primary) 18%,transparent)}
+  .stat b{display:block;font-size:1.05rem;line-height:1.1}
+  .stat small{color:var(--muted);font-size:.72rem;font-weight:600;letter-spacing:.3px}
+
+  .progress{
+    height:8px;border-radius:99px;background:var(--border);overflow:hidden;margin-bottom:20px;
+  }
+  .progress .bar{
+    height:100%;width:0;border-radius:99px;
+    background:linear-gradient(90deg,var(--primary),var(--primary-2));
+    transition:width .45s cubic-bezier(.4,0,.2,1);
+  }
+
+  /* ---------- Card ---------- */
+  .card{
+    background:var(--card);border:1px solid var(--border);border-radius:22px;
+    padding:26px 26px 22px;box-shadow:var(--shadow);
+    transition:background .3s,border-color .3s;
+    animation:pop .34s cubic-bezier(.2,.8,.3,1);
+  }
+  @keyframes pop{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+  .qtext{
+    margin:0 0 18px;font-size:1.12rem;line-height:1.55;font-weight:700;letter-spacing:-.2px;
+  }
+
+  .options{display:flex;flex-direction:column;gap:11px}
+  .option{
+    display:flex;align-items:flex-start;gap:13px;width:100%;text-align:left;
+    padding:14px 16px;border-radius:15px;cursor:pointer;
+    font:inherit;font-size:.96rem;line-height:1.5;color:var(--text);
+    background:var(--opt-bg);border:1.6px solid var(--border);
+    transition:border-color .16s,transform .16s,box-shadow .16s,background .25s,color .25s;
+  }
+  .option:hover:not(:disabled){
+    border-color:var(--primary);transform:translateY(-2px);
+    box-shadow:0 8px 20px color-mix(in srgb,var(--primary) 22%,transparent);
+  }
+  .option:disabled{cursor:default}
+  .badge{
+    flex:0 0 27px;width:27px;height:27px;border-radius:9px;display:grid;place-items:center;
+    font-size:.8rem;font-weight:800;color:var(--muted);
+    background:color-mix(in srgb,var(--muted) 13%,transparent);
+    transition:background .2s,color .2s;
+  }
+  .option.correct{border-color:var(--ok);background:var(--ok-bg)}
+  .option.correct .badge{background:var(--ok);color:#fff}
+  .option.wrong{border-color:var(--bad);background:var(--bad-bg)}
+  .option.wrong .badge{background:var(--bad);color:#fff}
+  .option.dim{opacity:.55}
+
+  /* ---------- Hint ---------- */
+  .hint-wrap{margin-top:16px}
+  .hint-btn{
+    display:inline-flex;align-items:center;gap:8px;
+    padding:9px 16px;border-radius:12px;cursor:pointer;
+    font:inherit;font-size:.86rem;font-weight:700;letter-spacing:.2px;
+    color:var(--hint);background:var(--hint-bg);
+    border:1.4px dashed color-mix(in srgb,var(--hint) 55%,transparent);
+    transition:transform .16s,box-shadow .16s,opacity .2s;
+  }
+  .hint-btn:hover{transform:translateY(-1px);box-shadow:0 6px 16px color-mix(in srgb,var(--hint) 25%,transparent)}
+  .hint-btn .bulb{font-size:1rem;line-height:1}
+  .hint-content{
+    margin-top:10px;padding:13px 16px;border-radius:13px;
+    font-size:.9rem;line-height:1.55;font-weight:500;
+    color:var(--text);background:var(--hint-bg);
+    border:1px solid color-mix(in srgb,var(--hint) 40%,transparent);
+    animation:pop .28s ease;
+  }
+  .hint-content strong{color:var(--hint)}
+  [hidden]{display:none !important}
+
+  /* ---------- Feedback ---------- */
+  .feedback{
+    margin-top:16px;padding:13px 16px;border-radius:14px;font-size:.9rem;
+    font-weight:600;display:none;animation:pop .28s ease;
+  }
+  .feedback.show{display:block}
+  .feedback.ok{background:var(--ok-bg);color:var(--ok);border:1px solid color-mix(in srgb,var(--ok) 35%,transparent)}
+  .feedback.bad{background:var(--bad-bg);color:var(--bad);border:1px solid color-mix(in srgb,var(--bad) 35%,transparent)}
+
+  /* ---------- Buttons ---------- */
+  .actions{display:flex;justify-content:flex-end;margin-top:18px}
+  .btn{
+    border:none;cursor:pointer;font:inherit;font-weight:700;font-size:.94rem;
+    padding:13px 26px;border-radius:14px;color:#fff;
+    background:linear-gradient(100deg,var(--primary),var(--primary-2));
+    box-shadow:0 10px 22px color-mix(in srgb,var(--primary) 38%,transparent);
+    transition:transform .16s,box-shadow .16s,opacity .2s;
+  }
+  .btn:hover{transform:translateY(-2px);box-shadow:0 14px 28px color-mix(in srgb,var(--primary) 46%,transparent)}
+  .btn:active{transform:translateY(0)}
+  .btn[hidden]{display:none}
+
+  /* ---------- Result ---------- */
+  .result{text-align:center;padding:8px 0 4px;animation:pop .4s ease}
+  .ring{
+    width:170px;height:170px;border-radius:50%;margin:6px auto 20px;
+    display:grid;place-items:center;
+    background:conic-gradient(var(--ok) calc(var(--p) * 1%), var(--border) 0);
+    transition:background .6s ease;
+  }
+  .ring-in{
+    width:132px;height:132px;border-radius:50%;background:var(--card);
+    display:grid;place-items:center;align-content:center;gap:2px;
+    box-shadow:inset 0 0 0 1px var(--border);
+  }
+  .ring-in b{font-size:2rem;line-height:1;letter-spacing:-1px}
+  .ring-in small{font-size:.72rem;color:var(--muted);font-weight:700;letter-spacing:.6px}
+  .result h2{margin:0 0 8px;font-size:1.35rem;letter-spacing:-.4px}
+  .result p{margin:0 0 20px;color:var(--muted);font-size:.94rem}
+  .result .pills{display:flex;justify-content:center;gap:10px;margin-bottom:24px;flex-wrap:wrap}
+  .pill{
+    padding:9px 16px;border-radius:12px;font-size:.85rem;font-weight:700;
+    border:1px solid var(--border);background:var(--opt-bg);
+  }
+  .pill.ok{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 40%,transparent)}
+  .pill.bad{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,transparent)}
+
+  @media (max-width:560px){
+    body{padding:16px 12px 50px}
+    .card{padding:20px 17px 18px;border-radius:18px}
+    .qtext{font-size:1.02rem}
+    .option{font-size:.9rem;padding:12px 13px}
+    .stat{padding:9px 10px;gap:8px}
+    .stat b{font-size:.95rem}
+    .stat small{font-size:.66rem}
+    .brand h1{font-size:1.02rem}
+    .logo{width:42px;height:42px;flex-basis:42px}
+    .theme-btn{width:42px;height:42px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ===== Header ===== -->
+  <header class="topbar">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
+        <defs>
+          <linearGradient id="lg" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#5b8cff"/>
+            <stop offset="1" stop-color="#7c4dff"/>
+          </linearGradient>
+        </defs>
+        <rect width="48" height="48" rx="14" fill="url(#lg)"/>
+        <rect x="10.5" y="13" width="27" height="18.5" rx="3.2"
+              fill="none" stroke="#fff" stroke-width="2.4"/>
+        <path d="M18.5 36h11" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M24 31.5V36" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+        <path d="M18.5 21.6l3.6 3.6 7.4-7.4" fill="none" stroke="#fff"
+              stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        <h1>Tin Học Quiz</h1>
+        <p>Ôn tập Tin học 10 · 33 câu hỏi</p>
+      </div>
+    </div>
+
+    <button class="theme-btn" id="themeBtn" title="Chuyển chế độ sáng / tối" aria-label="Đổi giao diện">
+      <svg class="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      <svg class="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    </button>
+  </header>
+
+  <!-- ===== Status bar ===== -->
+  <section class="stats">
+    <div class="stat ok"><span class="dot"></span><div><b id="sCorrect">0</b><small>ĐÚNG</small></div></div>
+    <div class="stat bad"><span class="dot"></span><div><b id="sWrong">0</b><small>SAI</small></div></div>
+    <div class="stat idx"><span class="dot"></span><div><b id="sIndex">1/33</b><small>CÂU HỎI</small></div></div>
+  </section>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+
+  <!-- ===== Quiz card ===== -->
+  <main class="card" id="card"></main>
+</div>
+
+<script>
+/* =========================================================
+   DỮ LIỆU CÂU HỎI  (c: chỉ số đáp án đúng trong mảng gốc,
+                     hint: gợi ý hiển thị khi bấm nút)
+   ========================================================= */
+const QUESTIONS = [
+  { q:"Hệ điều hành có vai trò chính nào sau đây?",
+    a:["Làm môi trường trung gian giữa phần cứng và phần mềm ứng dụng",
+       "Chỉ dùng để soạn thảo văn bản","Chỉ lưu trữ ảnh","Thay thế hoàn toàn CPU"], c:0,
+    hint:"Hệ điều hành đứng giữa phần cứng và phần mềm ứng dụng, quản lý tài nguyên và tạo môi trường cho các chương trình chạy." },
+
+  { q:"Thành phần nào sau đây là hệ điều hành dành cho thiết bị di động?",
+    a:["Android","LibreOffice","GIMP","Google Docs"], c:0,
+    hint:"Đây là hệ điều hành mã nguồn mở do Google phát triển, phổ biến trên smartphone và máy tính bảng." },
+
+  { q:"Điểm khác biệt cơ bản giữa hệ điều hành đa nhiệm và đơn nhiệm là gì?",
+    a:["Đa nhiệm chỉ chạy được trên điện thoại",
+       "Đa nhiệm hỗ trợ nhiều chương trình/tiến trình cùng hoạt động",
+       "Đơn nhiệm luôn cần Internet","Đơn nhiệm không quản lý tệp"], c:1,
+    hint:"“Đa” = nhiều, “nhiệm” = nhiệm vụ — chú ý khả năng chạy song song nhiều tiến trình cùng lúc." },
+
+  { q:"Việc hệ điều hành quản lý CPU, bộ nhớ và thiết bị vào/ra thuộc nhóm chức năng nào?",
+    a:["Quản lý thiết bị","Thiết kế đồ họa","Tìm kiếm web","Biên tập video"], c:0,
+    hint:"CPU, bộ nhớ, thiết bị vào/ra đều là tài nguyên phần cứng — nhóm chức năng nào liên quan trực tiếp tới chúng?" },
+
+  { q:"Công cụ nào thường dùng để duyệt và quản lý tệp, thư mục trong Windows?",
+    a:["File Explorer","Task Manager","Calculator","Paint"], c:0,
+    hint:"Tên công cụ gắn với “tệp” (File) và “khám phá” (Explorer)." },
+
+  { q:"Thành phần nào thường chứa biểu tượng ứng dụng đang mở và khu vực thông báo?",
+    a:["Taskbar","ROM","Mainboard","Driver"], c:0,
+    hint:"Đây là thanh ngang ở đáy màn hình Windows, chứa biểu tượng ứng dụng và đồng hồ hệ thống." },
+
+  { q:"Một ứng dụng bị treo, không phản hồi. Công cụ nào phù hợp để đóng ứng dụng đó?",
+    a:["Task Manager","File Explorer","Settings hình nền","Recycle Bin"], c:0,
+    hint:"Cần công cụ quản lý “tác vụ” để buộc kết thúc chương trình không phản hồi." },
+
+  { q:"Vì sao cần thiết lập múi giờ chính xác trên máy tính?",
+    a:["Để tăng dung lượng RAM",
+       "Để thời gian hệ thống và các hoạt động theo lịch hiển thị chính xác",
+       "Để đổi CPU","Để tăng độ phân giải màn hình"], c:1,
+    hint:"Múi giờ ảnh hưởng đến đồng hồ hệ thống, lịch và các hoạt động theo thời gian (họp, nhắc việc...)." },
+
+  { q:"Phần mềm nào sau đây là phần mềm nguồn mở theo đề cương?",
+    a:["LibreOffice","Microsoft Office","Photoshop","Windows"], c:0,
+    hint:"Đây là bộ ứng dụng văn phòng miễn phí, mã nguồn công khai, thay thế Microsoft Office." },
+
+  { q:"Google Docs là ví dụ tiêu biểu của loại phần mềm nào?",
+    a:["Phần mềm chạy trên Internet","Phần cứng máy tính","Hệ điều hành đơn nhiệm","Driver"], c:0,
+    hint:"Phần mềm này chạy trực tiếp trên trình duyệt, cần Internet để dùng và cộng tác." },
+
+  { q:"Đặc điểm nào phù hợp với phần mềm nguồn mở?",
+    a:["Mã nguồn luôn bị giữ kín",
+       "Mã nguồn được công khai theo giấy phép tương ứng",
+       "Luôn bắt buộc trả phí rất cao","Không được phép cải tiến"], c:1,
+    hint:"“Nguồn mở” = mã nguồn được mở công khai để mọi người xem, sửa và cải tiến." },
+
+  { q:"Nhóm học sinh cần cùng chỉnh sửa bài trình chiếu từ nhiều địa điểm. Lựa chọn nào phù hợp nhất?",
+    a:["Ứng dụng web/hỗ trợ cộng tác trực tuyến",
+       "Chỉ dùng một máy tính không kết nối mạng",
+       "Tắt quyền chia sẻ và gửi ảnh chụp màn hình",
+       "Chỉ sử dụng Task Manager"], c:0,
+    hint:"Nhiều người ở nhiều nơi cùng sửa một tài liệu → cần môi trường mạng và chia sẻ trực tuyến." },
+
+  { q:"Bộ phận nào thực hiện xử lý lệnh và dữ liệu của máy tính?",
+    a:["CPU","Bộ nguồn","Vỏ máy","Cáp HDMI"], c:0,
+    hint:"Đây là “bộ não” của máy tính, viết tắt của Central Processing Unit." },
+
+  { q:"Dung lượng RAM thường được đo bằng đơn vị nào?",
+    a:["GB","GHz","dpi","Hz"], c:0,
+    hint:"Dung lượng lưu trữ dùng GB; GHz/Hz là tần số, dpi là độ phân giải." },
+
+  { q:"Bộ phận nào kết nối các thành phần chính bên trong máy tính?",
+    a:["Bo mạch chủ (Mainboard)","Chuột","Máy in","Tai nghe"], c:0,
+    hint:"Đây là bảng mạch chính mà mọi linh kiện đều gắn lên đó." },
+
+  { q:"Phát biểu nào đúng về RAM?",
+    a:["Dữ liệu trong RAM thường mất khi tắt nguồn",
+       "RAM là ổ lưu trữ lâu dài duy nhất",
+       "RAM là cổng kết nối màn hình","RAM luôn chỉ đọc"], c:0,
+    hint:"RAM là bộ nhớ tạm thời — dữ liệu sẽ ra sao khi mất điện?" },
+
+  { q:"Vì sao máy tính dùng SSD thường khởi động nhanh hơn máy dùng HDD cơ học?",
+    a:["SSD thường có tốc độ đọc/ghi nhanh hơn",
+       "SSD làm tăng kích thước màn hình",
+       "SSD thay thế hệ điều hành","SSD không cần bộ xử lý"], c:0,
+    hint:"SSD dùng chip nhớ, không có đĩa quay cơ học → ưu điểm chính nằm ở tốc độ." },
+
+  { q:"Cổng nào thường được dùng để truyền hình ảnh và âm thanh số tới máy chiếu hoặc màn hình?",
+    a:["HDMI","RJ45","Jack nguồn","Khe SIM"], c:0,
+    hint:"Cổng này truyền cả video số và audio số trên cùng một dây cáp." },
+
+  { q:"Driver có vai trò gì?",
+    a:["Giúp hệ điều hành nhận diện và điều khiển thiết bị ngoại vi",
+       "Tăng dung lượng đĩa bằng cách nén mọi tệp",
+       "Thay thế màn hình","Tạo tài khoản email"], c:0,
+    hint:"Driver là “trình điều khiển” — giúp hệ điều hành hiểu và nói chuyện với thiết bị." },
+
+  { q:"Ưu điểm thường gặp của kết nối không dây là gì?",
+    a:["Linh hoạt, giảm dây cáp","Luôn ổn định hơn mọi kết nối có dây",
+       "Không cần nguồn điện cho thiết bị","Không bao giờ bị nhiễu"], c:0,
+    hint:"“Không dây” → không cần cáp, thuận tiện di chuyển và lắp đặt." },
+
+  { q:"Muốn màn hình máy tính và máy chiếu hiển thị cùng một nội dung, nên chọn chế độ nào?",
+    a:["Duplicate","Extend","Second Screen Only","Airplane mode"], c:0,
+    hint:"Muốn hai màn hình hiển thị giống hệt nhau → chọn chế độ “nhân bản”." },
+
+  { q:"Lưu trữ trực tuyến là gì?",
+    a:["Lưu tệp trên máy chủ từ xa thông qua Internet",
+       "Chỉ lưu tệp trong RAM","In tệp ra giấy",
+       "Lưu tệp duy nhất trên USB không kết nối mạng"], c:0,
+    hint:"Dữ liệu được lưu trên máy chủ của nhà cung cấp và truy cập qua Internet." },
+
+  { q:"Dịch vụ nào sau đây hỗ trợ lưu trữ trực tuyến?",
+    a:["Google Drive","Task Manager","BIOS","HDMI"], c:0,
+    hint:"Dịch vụ của Google cho phép lưu và đồng bộ tệp trên đám mây." },
+
+  { q:"Khi chia sẻ tệp trên Google Drive, quyền “Người xem” phù hợp khi người nhận cần:",
+    a:["Xem nội dung nhưng không cần chỉnh sửa",
+       "Toàn quyền sửa và xóa","Quản lý tài khoản chủ sở hữu",
+       "Thay đổi cài đặt hệ điều hành"], c:0,
+    hint:"“Người xem” = chỉ xem, không sửa, không xóa." },
+
+  { q:"Một hạn chế tiềm ẩn của lưu trữ trực tuyến là gì?",
+    a:["Có thể cần Internet và cần chú ý bảo vệ dữ liệu cá nhân",
+       "Không thể chia sẻ tệp","Chỉ hoạt động trên một loại máy tính",
+       "Không thể lưu tài liệu"], c:0,
+    hint:"Cần mạng để truy cập và có rủi ro về quyền riêng tư dữ liệu cá nhân." },
+
+  { q:"Công cụ nào là máy tìm kiếm?",
+    a:["Google","File Explorer","Task Manager","LibreOffice Writer"], c:0,
+    hint:"Đây là công cụ phổ biến nhất để tra cứu thông tin trên web." },
+
+  { q:"Để tìm chính xác cụm từ “an toàn thông tin”, nên nhập từ khóa nào?",
+    a:['"an toàn thông tin"',"an toàn OR mọi thứ",
+       "thông tin không giới hạn","filetype:mp3"], c:0,
+    hint:"Đặt cụm từ trong dấu ngoặc kép để tìm chính xác cả cụm." },
+
+  { q:"Cú pháp filetype:pdf được dùng để:",
+    a:["Giới hạn kết quả theo định dạng tệp PDF","Tìm riêng hình ảnh GIF",
+       "Tắt kết nối Internet","Dịch trang web"], c:0,
+    hint:"“filetype” là toán tử giới hạn loại tệp; “pdf” là định dạng tài liệu." },
+
+  { q:"Khi tìm tài liệu phục vụ học tập, cách làm nào đáng tin cậy hơn?",
+    a:["Đối chiếu thông tin và ưu tiên nguồn uy tín",
+       "Chọn kết quả đầu tiên mà không xem nguồn",
+       "Chỉ tin bài đăng không ghi tác giả",
+       "Chia sẻ ngay mọi kết quả"], c:0,
+    hint:"Nên kiểm chứng chéo nhiều nguồn và ưu tiên nguồn chính thống, có tác giả rõ ràng." },
+
+  { q:"Trong Gmail, nhãn (Label) chủ yếu giúp:",
+    a:["Phân loại và tổ chức thư","Tăng dung lượng RAM",
+       "Kết nối máy chiếu","Cài đặt Driver"], c:0,
+    hint:"Nhãn giúp phân loại thư giống như thư mục, dễ tìm lại sau này." },
+
+  { q:"Tính năng nào giúp gửi email vào thời điểm được chọn trước?",
+    a:["Lên lịch gửi","Đánh dấu sao","Tạo thư mục trên Desktop","Nén tệp"], c:0,
+    hint:"Tính năng cho phép chọn ngày giờ gửi thay vì gửi ngay lập tức." },
+
+  { q:"Vì sao nên đánh dấu sao hoặc gắn nhãn cho thư quan trọng?",
+    a:["Dễ nhận biết, phân loại và tránh bỏ lỡ thư cần xử lý",
+       "Tự động làm thư biến mất","Làm email không cần Internet",
+       "Tăng tốc CPU"], c:0,
+    hint:"Giúp thư quan trọng nổi bật, dễ phân loại và không bị lẫn trong hộp thư." },
+
+  { q:"Thiết lập xét duyệt bài viết được gắn thẻ trước khi xuất hiện trên trang cá nhân giúp:",
+    a:["Tăng quyền kiểm soát nội dung gắn với tài khoản",
+       "Tự động xóa mọi tài khoản khác",
+       "Công khai toàn bộ thông tin cá nhân",
+       "Tắt mọi thông báo hệ thống"], c:0,
+    hint:"Kiểm soát nội dung nào được hiển thị trên trang cá nhân của bạn." }
+];
+
+/* =========================================================
+   TIỆN ÍCH
+   ========================================================= */
+const LETTERS = ["A","B","C","D","E","F"];
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+
+function shuffle(arr){
+  for(let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+/* =========================================================
+   TRẠNG THÁI
+   ========================================================= */
+const card       = document.getElementById("card");
+const bar        = document.getElementById("bar");
+const sCorrect   = document.getElementById("sCorrect");
+const sWrong     = document.getElementById("sWrong");
+const sIndex     = document.getElementById("sIndex");
+
+let quiz = [];
+let idx = 0;
+let correct = 0;
+let wrong = 0;
+let answered = false;
+
+/* =========================================================
+   KHỞI TẠO
+   ========================================================= */
+function buildQuiz(){
+  return shuffle(QUESTIONS.map(item => {
+    const opts = item.a.map((text, i) => ({ text, isCorrect: i === item.c }));
+    shuffle(opts);
+    return { question: item.q, opts, hint: item.hint };
+  }));
+}
+
+function start(){
+  quiz = buildQuiz();
+  idx = 0; correct = 0; wrong = 0; answered = false;
+  updateStats();
+  renderQuestion();
+}
+
+/* =========================================================
+   THANH TRẠNG THÁI
+   ========================================================= */
+function updateStats(){
+  sCorrect.textContent = correct;
+  sWrong.textContent   = wrong;
+  sIndex.textContent   = Math.min(idx + 1, quiz.length) + "/" + quiz.length;
+  bar.style.width = ((correct + wrong) / quiz.length * 100) + "%";
+}
+
+/* =========================================================
+   HIỂN THỊ CÂU HỎI
+   ========================================================= */
+function renderQuestion(){
+  answered = false;
+  const q = quiz[idx];
+
+  card.innerHTML = `
+    <h2 class="qtext">${esc(q.question)}</h2>
+    <div class="options" id="options">
+      ${q.opts.map((o, i) => `
+        <button class="option" data-i="${i}">
+          <span class="badge">${LETTERS[i]}</span>
+          <span>${esc(o.text)}</span>
+        </button>`).join("")}
+    </div>
+
+    <div class="hint-wrap">
+      <button class="hint-btn" id="hintBtn" type="button">
+        <span class="bulb">💡</span> Xem gợi ý
+      </button>
+      <div class="hint-content" id="hintContent" hidden>
+        <strong>Gợi ý:</strong> ${esc(q.hint)}
+      </div>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+    <div class="actions">
+      <button class="btn" id="nextBtn" hidden>
+        ${idx === quiz.length - 1 ? "Xem kết quả 🎉" : "Câu tiếp theo →"}
+      </button>
+    </div>
+  `;
+
+  card.querySelectorAll(".option").forEach(btn => {
+    btn.addEventListener("click", () => choose(parseInt(btn.dataset.i, 10)));
+  });
+
+  const hintBtn = document.getElementById("hintBtn");
+  const hintContent = document.getElementById("hintContent");
+  hintBtn.addEventListener("click", () => {
+    const isHidden = hintContent.hasAttribute("hidden");
+    if (isHidden){
+      hintContent.removeAttribute("hidden");
+      hintBtn.innerHTML = '<span class="bulb">💡</span> Ẩn gợi ý';
+    } else {
+      hintContent.setAttribute("hidden", "");
+      hintBtn.innerHTML = '<span class="bulb">💡</span> Xem gợi ý';
+    }
+  });
+
+  document.getElementById("nextBtn").addEventListener("click", next);
+
+  updateStats();
+  bar.style.width = (idx / quiz.length * 100) + "%";
+}
+
+/* =========================================================
+   CHỌN ĐÁP ÁN
+   ========================================================= */
+function choose(picked){
+  if (answered) return;
+  answered = true;
+
+  const q = quiz[idx];
+  const buttons = [...card.querySelectorAll(".option")];
+  const isRight = q.opts[picked].isCorrect;
+
+  buttons.forEach((btn, i) => {
+    btn.disabled = true;
+    if (q.opts[i].isCorrect)      btn.classList.add("correct");
+    else if (i === picked)        btn.classList.add("wrong");
+    else                          btn.classList.add("dim");
+  });
+
+  const fb = document.getElementById("feedback");
+  if (isRight){
+    correct++;
+    fb.className = "feedback ok show";
+    fb.textContent = "✅ Chính xác! Làm tốt lắm.";
+  } else {
+    wrong++;
+    const rightText = q.opts.find(o => o.isCorrect).text;
+    fb.className = "feedback bad show";
+    fb.textContent = "❌ Chưa đúng. Đáp án đúng là: " + rightText;
+  }
+
+  document.getElementById("nextBtn").hidden = false;
+  updateStats();
+  bar.style.width = ((correct + wrong) / quiz.length * 100) + "%";
+}
+
+/* =========================================================
+   CÂU TIẾP THEO
+   ========================================================= */
+function next(){
+  idx++;
+  if (idx >= quiz.length) renderResult();
+  else renderQuestion();
+}
+
+/* =========================================================
+   KẾT QUẢ
+   ========================================================= */
+function renderResult(){
+  const total = quiz.length;
+  const pct = Math.round(correct / total * 100);
+
+  let title, msg;
+  if (pct === 100){ title = "Hoàn hảo! 🏆"; msg = "Bạn trả lời đúng toàn bộ " + total + " câu. Quá xuất sắc!"; }
+  else if (pct >= 80){ title = "Rất tốt! 🎯"; msg = "Kiến thức của bạn rất vững, chỉ cần ôn thêm vài câu nữa."; }
+  else if (pct >= 60){ title = "Khá ổn! 👍"; msg = "Bạn đã nắm được phần lớn nội dung, hãy xem lại các câu sai nhé."; }
+  else if (pct >= 40){ title = "Cố gắng thêm! 💪"; msg = "Hãy ôn lại lý thuyết từng bài rồi làm lại bài kiểm tra."; }
+  else { title = "Đừng nản! 🌱"; msg = "Mọi thứ đều bắt đầu từ việc luyện tập. Thử lại lần nữa nhé!"; }
+
+  card.innerHTML = `
+    <div class="result">
+      <div class="ring" style="--p:${pct}">
+        <div class="ring-in"><b>${pct}%</b><small>CHÍNH XÁC</small></div>
+      </div>
+      <h2>${title}</h2>
+      <p>${msg}</p>
+      <div class="pills">
+        <span class="pill ok">✅ Đúng: ${correct}</span>
+        <span class="pill bad">❌ Sai: ${wrong}</span>
+        <span class="pill">📋 Tổng: ${total} câu</span>
+      </div>
+      <button class="btn" id="restartBtn">🔄 Làm lại từ đầu</button>
+    </div>
+  `;
+
+  sIndex.textContent = total + "/" + total;
+  bar.style.width = "100%";
+  document.getElementById("restartBtn").addEventListener("click", start);
+}
+
+/* =========================================================
+   CHẾ ĐỘ SÁNG / TỐI
+   ========================================================= */
+const themeBtn = document.getElementById("themeBtn");
+const root = document.documentElement;
+
+function applyTheme(mode){
+  root.setAttribute("data-theme", mode);
+  try { localStorage.setItem("quiz-theme", mode); } catch(e){}
+}
+
+(function initTheme(){
+  let saved = null;
+  try { saved = localStorage.getItem("quiz-theme"); } catch(e){}
+  if (saved) { applyTheme(saved); return; }
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  applyTheme(prefersDark ? "dark" : "light");
+})();
+
+themeBtn.addEventListener("click", () => {
+  applyTheme(root.getAttribute("data-theme") === "dark" ? "light" : "dark");
+});
+
+/* =========================================================
+   PHÍM TẮT
+   ========================================================= */
+document.addEventListener("keydown", e => {
+  if (idx >= quiz.length) return;
+  if (["1","2","3","4"].includes(e.key)){
+    const i = parseInt(e.key, 10) - 1;
+    const btn = card.querySelector(`.option[data-i="${i}"]`);
+    if (btn && !answered) btn.click();
+  }
+  if (e.key === "Enter"){
+    const nb = document.getElementById("nextBtn");
+    if (nb && !nb.hidden) nb.click();
+  }
+});
+
+/* =========================================================
+   BẮT ĐẦU
+   ========================================================= */
+start();
+</script>
+</body>
+</html>
